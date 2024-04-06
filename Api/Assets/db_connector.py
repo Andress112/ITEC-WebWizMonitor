@@ -13,8 +13,8 @@ try:
     db_pool = mariadb.ConnectionPool(
         pool_name="WebWizMonitor",
         pool_size=64,
-        # host="amnezia.go.ro",
-        host="127.0.0.1",
+        host="amnezia.go.ro",
+        # host="127.0.0.1",
         port=3309,
         user="WebWiz_admin",
         password="4sFRvTTwjW6EdUKqiyXc",

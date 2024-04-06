@@ -59,7 +59,7 @@ function LoginPage() {
         } else {
             try {
                 const response = await axios.post(
-                    "http://10.210.86.12:301/api/signup",
+                    "http://127.0.0.1:301/api/signup",
                     {
                         username: values.User.trim(),
                         password: values.Password.trim(),
@@ -131,7 +131,7 @@ function LoginPage() {
         } else {
             try {
                 const response = await axios.post(
-                    "http://10.210.86.12:301/api/login",
+                    "http://127.0.0.1:301/api/login",
                     {
                         username: UsingEmailToLogIn ? "" : values.User.trim(),
                         password: values.Password.trim(),
