@@ -14,7 +14,7 @@ CREATE TABLE users (
 CREATE TABLE apps (
     Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     name VARCHAR(64) NOT NULL,
-    app_picture VARCHAR(255) NOT NULL,
+    app_picture VARCHAR(255),
     status INT NOT NULL,
     uptime DOUBLE NOT NULL,
     user_id INT NOT NULL,

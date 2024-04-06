@@ -8,6 +8,7 @@ import { Formik } from "formik";
 import { useNavigate } from "react-router-dom";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
+import useHandleRequestError from "../Components/useHandleRequestError";
 import "./css/LoginPage.css";
 
 interface JwtPayload {
@@ -40,6 +41,7 @@ function LoginPage() {
     const [LogingIn, setLogingIn] = useState(true); 
     const signIn = useSignIn();
     const navigate = useNavigate();
+    const handleRequestError = useHandleRequestError();
 
     CheckIfLoggedIn();
 
@@ -140,6 +142,7 @@ function LoginPage() {
                     {
                         headers: {
                             "Access-Control-Allow-Origin": "*",
+                            "Content-Type": "application/json"
                         },
                     }
                 );
@@ -178,10 +181,11 @@ function LoginPage() {
                         console.error('Failed to decode JWT token please contact the site administrator!');
                     }
                 } else {
-                    
+                    handleRequestError(response.data.status)
                 }
             } catch (error) {
                 if (error instanceof AxiosError) {
+                    console.error(error)
                     setError(1);
                 }
             }

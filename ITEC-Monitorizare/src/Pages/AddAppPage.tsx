@@ -19,7 +19,7 @@ function AddAppPage() {
 
     const handleEndpointChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const updatedEndpoints = [...Endpoints];
-        updatedEndpoints[index] = event.target.value;
+        updatedEndpoints[index] = event.target.value.trim();
         setEndpoints(updatedEndpoints);
     };
     const handleEndpointNameChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -58,26 +58,36 @@ function AddAppPage() {
         } else {
             try {
                 const response = await axios.post(
-                    "http://127.0.0.1:301/api/login",
+                    "http://127.0.0.1:301/api/add_app",
                     {
                         userId: 1,
                         appName: values.username.trim(),
                         endpoints: Endpoints,
-                        endpointsNames: EndpointsNames,
+                        endpointNames: EndpointsNames,
                     },
                     {
                         headers: {
                             "Access-Control-Allow-Origin": "*",
+                            "Content-Type": "application/json"
                         },
                     }
                 );
 
                 if (response.data.status === 200) {
+                    if (response.data.data !== "") {
+                        Swal.fire({
+                            title: "Success",
+                            text: response.data.data,
+                            icon: 'success',
+                            confirmButtonText: 'Ok',
+                            timer: 10000,
+                            timerProgressBar: true,
+                        });
+                    }
                     navigate("/")
                 } else {
                     handleRequestError(response.data.status)
                 }
-
             } catch (error) {
                 if (error instanceof AxiosError) {
                     console.error(error)

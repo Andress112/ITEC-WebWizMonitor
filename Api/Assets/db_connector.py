@@ -1,6 +1,6 @@
 #Import Packages
 
-import mariadb, json
+import mariadb, json, requests
 from datetime import datetime, timedelta
 from .Encrypt import hash_password, verify_password
 from .functions import generate_random_string
@@ -123,6 +123,95 @@ def LoginUser(Username, Password, Email):
                         return {"status": 104}
                     elif authTipe == 2:
                         return {"status": 103}
+            except Exception as e:
+                print(e)
+                tryes += 1
+        except mariadb.Error as e:
+            tryes += 1
+            print(f"Database error: {e}")
+        finally:
+            if dbcursor:
+                dbcursor.close()
+            if db:
+                db.close()
+    if (tryes == 10):
+        return {"status": 0}
+
+def AddNewApp(userId, appName):
+    global maxTryes
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            db = get_db_connection()
+            dbcursor = db.cursor()
+            try:
+                if len(appName) < 1:
+                    return {"status": 107}
+                appName = appName.lower() 
+                if appName[0].isalpha():
+                    appName = appName[0].upper() + appName[1:]
+                dbcursor.execute("SELECT Id FROM apps WHERE name = ?;", (appName,))
+                appExists = dbcursor.fetchone()
+                if appExists == None:
+                    dbcursor.execute("INSERT INTO apps (name, status, uptime, user_id) VALUES (?, ?, ?, ?)", (appName, 1, 100.0, userId))
+                    db.commit()
+                    NewAppId = dbcursor.lastrowid
+                    return {"status": 200, "appId": NewAppId}
+                else:
+                    return {"status": 106}
+            except Exception as e:
+                print(e)
+                tryes += 1
+        except mariadb.Error as e:
+            tryes += 1
+            print(f"Database error: {e}")
+        finally:
+            if dbcursor:
+                dbcursor.close()
+            if db:
+                db.close()
+    if (tryes == 10):
+        return {"status": 0}
+
+def IsEndpointOk(url):
+    global maxTryes
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            response = requests.get(url)
+            if response.status_code == 200 or response.status_code == 302: 
+                return True
+            else:
+                return False
+        except:
+            tryes += 1
+    if (tryes == 10):
+        return False
+
+def AddNewAppEndpoint(appId, url, title):
+    global maxTryes
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            db = get_db_connection()
+            dbcursor = db.cursor()
+            try:
+                if len(url) < 1:
+                    return {"status": 109}
+                url = url.lower()
+                dbcursor.execute("SELECT Id FROM endpoints WHERE url = ? AND app_id = ?;", (url, appId))
+                appExists = dbcursor.fetchone()
+                if appExists == None:
+                    IsEndpointOnline = IsEndpointOk(url)
+                    if IsEndpointOnline:
+                        EndpointStatus = 2
+                    else:
+                        EndpointStatus = 0
+                    dbcursor.execute("INSERT INTO endpoints (url, title, request_interval, status, uptime, app_id) VALUES (?, ?, ?, ?, ?, ?)", (url, title, 60, EndpointStatus, 100.0, appId))
+                    db.commit()
+                    return {"status": 200}
+                else:
+                    return {"status": 108}
             except Exception as e:
                 print(e)
                 tryes += 1
