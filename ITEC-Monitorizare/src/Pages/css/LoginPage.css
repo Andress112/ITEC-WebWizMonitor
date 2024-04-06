@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Bruno+Ace+SC&family=Mochiy+Pop+P+One&family=New+Rocker&display=swap');
+.LoginPage-parent {
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    background-image: url("/backrounds/login_bg.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.Loginpage-container-logo {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.Loginpage-container-logo img {
+    height: 70px;
+    border-radius: 50px;
+}
+.Loginpage-container-logo h1 {
+    font-size: 26px;
+    color: #bdbdbd;
+    font-family: 'Times New Roman', Times, serif;
+    filter: drop-shadow(0px 0px 10px #00dd2573);
+}
+.Loginpage-container-main {
+    background-color: #ffffff1f;
+    height: 600px;
+    width: 42vw;
+    border-radius: 40px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid #ffffff34;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: center;
+    color: #ffffff;
+}
+.Loginpage-container {
+    width: 100%;
+    height: 600px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 80px;
+}
+.Loginpage-container-heading {
+    width: 100%;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: solid 1px #cfcfcf;
+}
+.Loginpage-container-heading span {
+    font-size: 28px;
+    font-weight: 500;
+}
+.Loginpage-container-inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    gap: 12px;
+}
+.Loginpage-container-inputs input {
+    padding-left: 10px;
+    width: 15vw;
+    height: 35px;
+    border-radius: 12px;
+    border: solid 1px #cfcfcf73;
+    background-color: #00000062;
+    color: #ffffff;
+    transition: all 0.25s ease;
+}
+.Loginpage-container-inputs input:hover,
+.Loginpage-container-inputs input:focus{
+    background-color: #00000098;
+    box-shadow: 1px 2px 10px #00852c1c;
+}
+.Loginpage-container-inputs label {
+    height: 35px;
+    font-size: 15px;
+    font-weight: 500;
+    filter: drop-shadow(1px 2px 8px #000000);
+}
+.Loginpage-container-bottom {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    gap: 10px;
+}
+.Loginpage-container-bottom button {
+    width: 120px;
+    height: 40px;
+    border-radius: 16px;
+    border: solid 1px #000000;
+    background-color: #00000062;
+    color: #ffffff;
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+.Loginpage-container-bottom button:hover {
+    background-color: #00000098;
+    box-shadow: 1px 2px 10px #00852c1c;
+}
+.Loginpage-container-bottom span {
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+.Loginpage-container-bottom span:hover {
+    color: #23d300;
+}
+.Loginpage-container-inputs-password {
+    position: relative;
+    width: fit-content;
+}
+.Loginpage-container-inputs-password .Loginpage-btn-show-pass {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}

@@ -1,0 +1,7 @@
+Flask
+Flask-RESTful
+flask_cors
+requests
+mariadb
+argon2-cffi
+PyJWT
