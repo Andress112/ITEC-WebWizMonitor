@@ -28,9 +28,7 @@ const router = createBrowserRouter([
   {
     path: "/home",
     element:
-      <RequireAuth fallbackPath={'/login'}>
-        <HomePage />
-      </RequireAuth>,
+        <HomePage />,
     errorElement: <ErrorPage />
   },
   {
@@ -50,7 +48,9 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element:
-        <DeveloperDashboarPage />,
+      <RequireAuth fallbackPath={'/login'}>
+        <DeveloperDashboarPage />
+        </RequireAuth>,
     errorElement: <ErrorPage />
   },
   {

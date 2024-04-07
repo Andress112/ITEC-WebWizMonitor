@@ -24,6 +24,7 @@ function DeveloperDashboarPage() {
     const [tryCount, setTryCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const isInitialMount = useRef(true);
+    const hasLoaded = useRef(false);
 
     useEffect(() => {
         if (tryCount >= 10 || authInitialized) {
@@ -64,8 +65,11 @@ function DeveloperDashboarPage() {
                 );
     
                 if (response.data.status === 200) {
-                    console.log(response.data.status)
                     setJsonData(response.data.data);
+                    if (!hasLoaded.current) {
+                        setLoading(false);
+                        hasLoaded.current = true;
+                    }
                 } else {
                     handleRequestError(response.data.status)
                 }
@@ -86,7 +90,6 @@ function DeveloperDashboarPage() {
         if (isInitialMount.current && authInitialized) {
             isInitialMount.current = false; // Set the ref to false after the first render
             getDeveloperApps(); // Call getUserdata when authInitialized becomes true
-            setLoading(false);
         }
 
         const interval = setInterval(() => {
@@ -95,7 +98,7 @@ function DeveloperDashboarPage() {
     
         return () => clearInterval(interval);
 
-    });
+    }, [authInitialized, handleRequestError, setLoading, userId]);
 
     return (
         <MainLayout>
@@ -106,20 +109,30 @@ function DeveloperDashboarPage() {
                 <div className="DeveloperDashboarPage-bottom">
                     <div className="DeveloperDashboarPage-container">
                         <div className="DeveloperDashboarPage-apps">
-                            {Object.keys(jsonData).map((key) => (
-                                <div className="DeveloperDashboarPage-container-apps" key={key}>
-                                    <img src={jsonData[key]?.app_logo === "" ? "/backrounds/image-placeholder.png" : jsonData[key]?.app_logo.toString()} alt="App Placeholder Image" />
-                                    <div className="DeveloperDashboarPage-container-apps-right">
-                                        <div className="DeveloperDashboarPage-container-apps-right-top">
-                                            <span className="DeveloperDashboarPage-app-names">{jsonData[key]?.name}</span>
-                                            <div className="DeveloperDashboarPage-container-apps-status" style={{color: jsonData[key]?.status == 0 ? "#c90011" : jsonData[key]?.status == 1 ? "#bfa600" : "#08c239"}}>
-                                                <span>&#x2022;</span>
-                                                <span>{jsonData[key]?.status == 0 ? "Down" : jsonData[key]?.status == 1 ? "Unstable" : "Stable"}</span>
+                            {!loading ? (
+                                <>
+                                    {Object.keys(jsonData).map((key) => (
+                                        <div className="DeveloperDashboarPage-container-apps" key={key}>
+                                            <img src={jsonData[key]?.app_logo === "" ? "/backrounds/image-placeholder.png" : jsonData[key]?.app_logo.toString()} alt="App Placeholder Image" />
+                                            <div className="DeveloperDashboarPage-container-apps-right">
+                                                <div className="DeveloperDashboarPage-container-apps-right-top">
+                                                    <span className="DeveloperDashboarPage-app-names">{jsonData[key]?.name}</span>
+                                                    <div className="DeveloperDashboarPage-container-apps-status" style={{color: jsonData[key]?.status == 0 ? "#c90011" : jsonData[key]?.status == 1 ? "#bfa600" : "#08c239"}}>
+                                                        <span>&#x2022;</span>
+                                                        <span>{jsonData[key]?.status == 0 ? "Down" : jsonData[key]?.status == 1 ? "Unstable" : "Stable"}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+                                    ))}
+                                </>
+                            ): (
+                                <>
+                                    <div className="DeveloperDashboarPage-loading">
+                                        <span>Loading ...</span>
                                     </div>
-                                </div>
-                            ))}
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

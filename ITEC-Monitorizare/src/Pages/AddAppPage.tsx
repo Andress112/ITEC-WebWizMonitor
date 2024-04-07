@@ -16,7 +16,6 @@ function AddAppPage() {
     const [EndpointDeleteButtonVisible, setEndpointDeleteButtonVisible] = useState(false);
     const [AppName, setAppName] = useState("");
     const [AppImage, setAppImage] = useState("");
-    const [AppImageLink, setAppImageLink] = useState("");
 
     // Auth Data
     const [userId, setUserId] = useState<number | null>(null);

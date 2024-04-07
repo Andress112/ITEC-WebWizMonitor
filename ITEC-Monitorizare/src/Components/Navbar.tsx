@@ -16,12 +16,16 @@ function Navbar() {
     const navigate = useNavigate();
 
     const handleOnProfileClick = () => {
-        setProfileShow(!ProfileShow);
+        if (user) {
+            setProfileShow(!ProfileShow);
+        } else {
+            navigate("/login");
+        }
     };
 
     const LogOut = () => {
         SignOut();
-        navigate("/login");
+        navigate("/");
     };
 
     const handleOutsideClick = (event: MouseEvent) => {
@@ -74,19 +78,23 @@ function Navbar() {
                                 Home
                             </Link>
                         </li>
+                        {user && (
+                            <>
+                                <li>
+                                    <Link to="/dashboard" className="Navbar-link">
+                                        Dashboard
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/add_app" className="Navbar-link">
+                                        Add App
+                                    </Link>
+                                </li>
+                            </>
+                        )}
                         <li>
                             <Link to="/" className="Navbar-link">
                                 Info
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/add_app" className="Navbar-link">
-                                Add App
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/dashboard" className="Navbar-link">
-                                Dashboard
                             </Link>
                         </li>
                         <li>

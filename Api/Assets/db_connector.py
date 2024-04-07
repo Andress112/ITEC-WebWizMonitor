@@ -1,10 +1,9 @@
 #Import Packages
 
-import mariadb, json, requests
+import mariadb, json, requests, time, jwt, threading
 from datetime import datetime, timedelta
 from .Encrypt import hash_password, verify_password
 from .functions import generate_random_string
-import jwt
 
 # TODO:
 
@@ -175,17 +174,13 @@ def AddNewApp(userId, appName, appImage):
 
 def IsEndpointOk(url):
     global maxTryes
-    tryes = 0
-    while tryes < maxTryes:
-        try:
-            response = requests.get(url)
-            if response.status_code == 200 or response.status_code == 302: 
-                return True
-            else:
-                return False
-        except:
-            tryes += 1
-    if (tryes == 10):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200 or response.status_code == 302: 
+            return True
+        else:
+            return False
+    except:
         return False
 
 def AddNewAppEndpoint(appId, url, title):
@@ -252,7 +247,7 @@ def getDevApps(userId):
     if (tryes == 10):
         return {"status": 0}
 
-def checkAppEndPoints(AppId):
+def getApps():
     global maxTryes
     tryes = 0
     while tryes < maxTryes:
@@ -260,23 +255,9 @@ def checkAppEndPoints(AppId):
             db = get_db_connection()
             dbcursor = db.cursor()
             try:
-                dbcursor.execute("SELECT url, id FROM endpoints WHERE app_id = ?;", (AppId,))
-                AppEndpoints = dbcursor.fetchall()
-                for endpoint in AppEndpoints:
-                    ErroredRequests = 0
-                    for i in range(0, 10):
-                        try:
-                            status = IsEndpointOk(endpoint)
-                            if not status:
-                                ErroredRequests += 1
-                        except requests.ConnectionError:
-                            ErroredRequests += 1
-                    if ErroredRequests == 10: 
-                        endpointStatus = 0
-                    elif ErroredRequests > 0:
-                        endpointStatus = 1
-                    if endpointStatus != 0:
-                        dbcursor.execute("SELECT url, id FROM endpoints WHERE app_id = ?;", (AppId,))
+                dbcursor.execute("SELECT * FROM apps;")
+                appExists = dbcursor.fetchall()
+                return {"status": 200, "apps": appExists}
             except Exception as e:
                 print(e)
                 tryes += 1
@@ -289,4 +270,107 @@ def checkAppEndPoints(AppId):
             if db:
                 db.close()
     if (tryes == 10):
+        return {"status": 0}
+
+def checkAppEndPoints(AppId):
+    global maxTryes
+    
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            db = get_db_connection()
+            with db.cursor() as dbcursor:
+                dbcursor.execute("SELECT url, id FROM endpoints WHERE app_id = ?;", (AppId,))
+                AppEndpoints = dbcursor.fetchall()
+                
+                endpointsStatus = []
+                appStatus = 0
+                
+                if AppEndpoints:
+                    for endpoint in AppEndpoints:
+                        ErroredRequests = 0
+                        for i in range(10):
+                            try:
+                                status = IsEndpointOk(endpoint[0])
+                                if not status:
+                                    ErroredRequests += 1
+                            except:
+                                ErroredRequests += 1
+                        
+                        # Determine endpoint status
+                        if ErroredRequests == 10: 
+                            endpointStatus = 0
+                        elif ErroredRequests > 0:
+                            endpointStatus = 1
+                        else:
+                            endpointStatus = 2
+                        
+                        # Append endpoint status
+                        endpointsStatus.append(endpointStatus)
+                        
+                        # Update endpoint status in the database
+                        dbcursor.execute("UPDATE endpoints SET status = ? WHERE id = ?;", (endpointStatus, endpoint[1]))
+                if AppEndpoints:
+                    # Determine app status
+                    if all(element == 2 for element in endpointsStatus):
+                        appStatus = 2
+                    elif all(element == 0 for element in endpointsStatus):
+                        appStatus = 0
+                    else:
+                        appStatus = 1
+                
+                # Update app status in the database
+                dbcursor.execute("UPDATE apps SET status = ? WHERE id = ?;", (appStatus, AppId))
+                
+                db.commit()
+                return
+        except mariadb.Error as e:
+            tryes += 1
+            print(f"Database error: {e}")
+        except Exception as e:
+            print(e)
+            tryes += 1
+        finally:
+            if db:
+                db.close()
+    
+    if tryes == maxTryes:
+        return {"status": 0}
+
+def CheckAllAppsStatus():
+    global maxTryes
+    
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            db = get_db_connection()
+            dbcursor = db.cursor()
+            try:
+                dbcursor.execute("SELECT Id FROM apps;")
+                app_ids = [app_id[0] for app_id in dbcursor.fetchall()]  # Unpack the result of fetchall()
+                
+                # Create and start a separate thread for each app_id
+                threads = []
+                for app_id in app_ids:
+                    thread = threading.Thread(target=checkAppEndPoints, args=(app_id,))
+                    threads.append(thread)
+                    thread.start()
+                
+                # Wait for all threads to complete
+                for thread in threads:
+                    thread.join()
+                
+                return
+            except Exception as e:
+                print(e)
+                tryes += 1
+        except mariadb.Error as e:
+            tryes += 1
+            print(f"Database error: {e}")
+        finally:
+            if dbcursor:
+                dbcursor.close()
+            if db:
+                db.close()
+    if tryes == maxTryes:
         return {"status": 0}

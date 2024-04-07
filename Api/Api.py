@@ -2,10 +2,10 @@
 from flask import Flask, request, jsonify, redirect
 from flask_restful import Api, Resource, reqparse
 from flask_cors import CORS
-import sys, json
+import sys, json, threading, time
 
 #Import Custom Packages
-from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint, getDevApps
+from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint, getDevApps, CheckAllAppsStatus, getApps
 from Assets.functions import generate_random_string
 
 
@@ -69,7 +69,6 @@ class UserSignUp_Endpoint(Resource):
         Email = args["email"]
         try:
             signUpResponse = AddUser(Username, Password, Email)
-            print(signUpResponse)
             if signUpResponse["status"] == 100:
                 return jsonify({"status" : 100, "data" : "The username is already in use!"})
             elif signUpResponse["status"] == 101:
@@ -156,7 +155,6 @@ class GetDevApps_Endpoint(Resource):
         userId = int(payload["userId"])
         try:
             Apps = getDevApps(userId)
-            print(Apps)
             if Apps["status"] == 110:
                 return jsonify({"status" : 200, "data" : ""})
             elif Apps["status"] == 200:
@@ -177,6 +175,42 @@ class GetDevApps_Endpoint(Resource):
             print(error, err)
             return jsonify(error)
 
+class GetApps_Endpoint(Resource):
+    def post(self):
+        try:
+            Apps = getApps()
+            formatted_apps = []
+            for app in Apps["apps"]:
+                formatted_app = {
+                    "name": app[1],
+                    "app_logo": app[2],
+                    "status": app[3],
+                    "uptime": app[4]
+                }
+                formatted_apps.append(formatted_app)
+            return jsonify({"status" : 200, "data" : formatted_apps})
+        except Exception as err:
+            error = {"status" : 553, "data" : "An error occurred while retriving the apps!"}
+            print(error, err)
+            return jsonify(error)
+
+# Start the thread that verifies the apps status
+check_status_lock = threading.Lock()
+stop_thread_flag = threading.Event()
+def run_CheckAllAppsStatus():
+    while not stop_thread_flag.is_set():
+        CheckAllAppsStatus()
+        time.sleep(60)
+
+# Function to stop the thread
+def stop_thread():
+    print("Stopping the thread...")
+    stop_thread_flag.set()
+
+# Create a thread for checking all the apps and endpoints evry minute
+check_status_thread = threading.Thread(target=run_CheckAllAppsStatus)
+# Start the thread
+check_status_thread.start()
 
 # API Rounts
 
@@ -196,9 +230,17 @@ api.add_resource(AddApp_Endpoint, "/api/add_app")
 
 api.add_resource(GetDevApps_Endpoint, "/api/get_dev_apps")
 
+api.add_resource(GetApps_Endpoint, "/api/get_apps")
+
+# Function to stop the server gracefully
+stop_server_flag = threading.Event()
+def stop_server():
+    print("Stopping the API...")
+    stop_thread()
+    stop_server_flag.set()
 
 # Run the API
-while True:
+while not stop_server_flag.is_set():
     try:
         if sys.platform.startswith('linux'):
             if __name__ == "__main__":
@@ -210,4 +252,5 @@ while True:
                 break
     except KeyboardInterrupt:
         print("Keyboard interrupt! Stoping the Api...")
+        stop_server()
         break
