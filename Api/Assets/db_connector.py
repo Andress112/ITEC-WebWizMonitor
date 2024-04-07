@@ -403,3 +403,29 @@ def ReportApp(AppId):
                 db.close()
     if tryes == maxTryes:
         return False
+
+def FixAppBug(AppId):
+    global maxTryes
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            db = get_db_connection()
+            dbcursor = db.cursor()
+            try:
+                dbcursor.execute("DELETE FROM bugs WHERE app_id = ?;", (AppId,))
+                db.commit()
+                checkAppEndPoints(AppId)
+                return True
+            except Exception as e:
+                print(e)
+                tryes += 1
+        except mariadb.Error as e:
+            tryes += 1
+            print(f"Database error: {e}")
+        finally:
+            if dbcursor:
+                dbcursor.close()
+            if db:
+                db.close()
+    if tryes == maxTryes:
+        return False

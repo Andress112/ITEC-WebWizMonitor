@@ -101,6 +101,46 @@ function DeveloperDashboarPage() {
 
     }, [authInitialized, handleRequestError, setLoading, userId]);
 
+    const fixAppBug = async (appId: number) => {
+        try {
+            const response = await axios.post(
+                "http://127.0.0.1:301/api/fix_app_bug",
+                {
+                    appId: appId,
+                },
+                {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                        "Content-Type": "application/json"
+                    },
+                }
+            );
+
+            if (response.data.status === 200) {
+                Swal.fire({
+                    title: "The app has been succesfully fixed!",
+                    icon: 'success',
+                    confirmButtonText: 'Ok',
+                    timer: 10000,
+                    timerProgressBar: true,
+                });
+            } else {
+                handleRequestError(response.data.status)
+            }
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                console.error(error)
+                Swal.fire({
+                    title: "An error occurred check the console for more information",
+                    icon: 'error',
+                    confirmButtonText: 'Ok',
+                    timer: 10000,
+                    timerProgressBar: true,
+                });
+            }
+        }
+    };
+
     return (
         <MainLayout>
             <div className="DeveloperDashboarPage">
@@ -124,7 +164,7 @@ function DeveloperDashboarPage() {
                                                     </div>
                                                 </div>
                                                 <div className="DeveloperDashboarPage-container-apps-right-bottom">
-                                                    <button>Fix Bug</button>
+                                                    <button onClick={() => fixAppBug(jsonData[key]?.id)}>Fix Bug</button>
                                                 </div>
                                             </div>
                                         </div>

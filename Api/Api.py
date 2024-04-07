@@ -5,7 +5,7 @@ from flask_cors import CORS
 import sys, json, threading, time
 
 #Import Custom Packages
-from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint, getDevApps, CheckAllAppsStatus, getApps, ReportApp
+from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint, getDevApps, CheckAllAppsStatus, getApps, ReportApp, FixAppBug
 from Assets.functions import generate_random_string
 
 
@@ -190,6 +190,22 @@ class ReportBug_Endpoint(Resource):
             error = {"status" : 554, "data" : "An error occurred while reporting an app!"}
             print(error, err)
             return jsonify(error)
+
+class FixBug_Endpoint(Resource):
+    def post(self):
+        payload = request.get_json()
+        appId = int(payload["appId"])
+        try:
+            reportResponse = FixAppBug(appId)
+            if reportResponse:
+                return jsonify({"status" : 200})
+            else: 
+                return jsonify({"status" : 504, "data": "An error occurred while fixing app bug!"})
+        except Exception as err:
+            error = {"status" : 554, "data" : "An error occurred while fixing app bug!"}
+            print(error, err)
+            return jsonify(error)
+
 class GetApps_Endpoint(Resource):
     def post(self):
         try:
@@ -253,6 +269,8 @@ api.add_resource(GetDevApps_Endpoint, "/api/get_dev_apps")
 api.add_resource(GetApps_Endpoint, "/api/get_apps")
 
 api.add_resource(ReportBug_Endpoint, "/api/report_app")
+
+api.add_resource(FixBug_Endpoint, "/api/fix_app_bug")
 
 # Function to stop the server gracefully
 stop_server_flag = threading.Event()
