@@ -5,7 +5,7 @@ from flask_cors import CORS
 import sys, json, threading, time
 
 #Import Custom Packages
-from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint, getDevApps, CheckAllAppsStatus, getApps
+from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint, getDevApps, CheckAllAppsStatus, getApps, ReportApp
 from Assets.functions import generate_random_string
 
 
@@ -164,7 +164,8 @@ class GetDevApps_Endpoint(Resource):
                         "name": app[1],
                         "app_logo": app[2],
                         "status": app[3],
-                        "uptime": app[4]
+                        "uptime": app[4],
+                        "id": app[0]
                     }
                     formatted_apps.append(formatted_app)
                 return jsonify({"status" : 200, "data" : formatted_apps})
@@ -175,6 +176,20 @@ class GetDevApps_Endpoint(Resource):
             print(error, err)
             return jsonify(error)
 
+class ReportBug_Endpoint(Resource):
+    def post(self):
+        payload = request.get_json()
+        appId = int(payload["appId"])
+        try:
+            reportResponse = ReportApp(appId)
+            if reportResponse:
+                return jsonify({"status" : 200})
+            else: 
+                return jsonify({"status" : 504, "data": "An error occurred while reporting an app!"})
+        except Exception as err:
+            error = {"status" : 554, "data" : "An error occurred while reporting an app!"}
+            print(error, err)
+            return jsonify(error)
 class GetApps_Endpoint(Resource):
     def post(self):
         try:
@@ -185,7 +200,8 @@ class GetApps_Endpoint(Resource):
                     "name": app[1],
                     "app_logo": app[2],
                     "status": app[3],
-                    "uptime": app[4]
+                    "uptime": app[4],
+                    "id": app[0]
                 }
                 formatted_apps.append(formatted_app)
             return jsonify({"status" : 200, "data" : formatted_apps})
@@ -235,6 +251,8 @@ api.add_resource(AddApp_Endpoint, "/api/add_app")
 api.add_resource(GetDevApps_Endpoint, "/api/get_dev_apps")
 
 api.add_resource(GetApps_Endpoint, "/api/get_apps")
+
+api.add_resource(ReportBug_Endpoint, "/api/report_app")
 
 # Function to stop the server gracefully
 stop_server_flag = threading.Event()

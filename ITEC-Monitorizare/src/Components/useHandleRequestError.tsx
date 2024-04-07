@@ -50,11 +50,29 @@ function useHandleRequestError() {
         else if (status === 105) {
             warnPopUp("Invalid Password!", "")
         }
+        else if (status === 106) {
+            warnPopUp("An app with this name already exists", "")
+        }
+        else if (status === 107) {
+            warnPopUp("The apps name is to short!", "")
+        }
+        else if (status === 108) {
+            warnPopUp("An endpoint with this url already exists!", "")
+        }
+        else if (status === 109) {
+            warnPopUp("The url of the endpoint cant be empty!", "")
+        }
         else if (status === 550 || status === 500) {
             errorPopUp("An error occurred while trying to signUp!","Please contact the site admin if this keeps happening!")
         }
         else if (status === 551 || status === 501) {
             errorPopUp("An error occurred while trying to login!","Please contact the site admin if this keeps happening!")
+        }
+        else if (status === 552 || status === 502) {
+            errorPopUp("An error occurred while add a new app!","Please contact the site admin if this keeps happening!")
+        }
+        else if (status === 553 || status === 503) {
+            errorPopUp(" An error occurred while retriving the apps!","Please contact the site admin if this keeps happening!")
         }
         else {
             warnPopUp("A internal error has occured! Code: " + status, "")

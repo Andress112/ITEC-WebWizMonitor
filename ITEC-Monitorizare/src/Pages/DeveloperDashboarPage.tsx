@@ -12,6 +12,7 @@ interface AppData {
     name: string;
     status: number;
     uptime: number;
+    id: number;
 }
 
 function DeveloperDashboarPage() {
@@ -121,6 +122,9 @@ function DeveloperDashboarPage() {
                                                         <span>&#x2022;</span>
                                                         <span>{jsonData[key]?.status == 0 ? "Down" : jsonData[key]?.status == 1 ? "Unstable" : "Stable"}</span>
                                                     </div>
+                                                </div>
+                                                <div className="DeveloperDashboarPage-container-apps-right-bottom">
+                                                    <button>Fix Bug</button>
                                                 </div>
                                             </div>
                                         </div>

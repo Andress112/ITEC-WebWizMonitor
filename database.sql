@@ -34,9 +34,7 @@ CREATE TABLE endpoints (
 
 CREATE TABLE bugs (
     Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    description VARCHAR(512),
     app_id INT NOT NULL,
-    status INT NOT NULL, -- 0 not rezolved , 1 rezolved
     FOREIGN KEY (app_id) REFERENCES apps(Id)
 );
 
