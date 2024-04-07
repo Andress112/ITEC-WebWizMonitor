@@ -97,11 +97,6 @@ function Navbar() {
                                 Info
                             </Link>
                         </li>
-                        <li>
-                            <Link to="/feedback" className="Navbar-link">
-                                Feedback
-                            </Link>
-                        </li>
                     </ul>
                     <img
                         src="./icons/profile.svg"

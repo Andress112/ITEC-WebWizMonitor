@@ -200,18 +200,22 @@ stop_thread_flag = threading.Event()
 def run_CheckAllAppsStatus():
     while not stop_thread_flag.is_set():
         CheckAllAppsStatus()
-        time.sleep(60)
+        for i in range(60):
+            if not stop_thread_flag.is_set():
+                time.sleep(1)
+            else:
+                break
 
 # Function to stop the thread
 def stop_thread():
     print("Stopping the thread...")
     stop_thread_flag.set()
+    print("Waiting for the thread to stop...")
 
 # Create a thread for checking all the apps and endpoints evry minute
 check_status_thread = threading.Thread(target=run_CheckAllAppsStatus)
 # Start the thread
 check_status_thread.start()
-
 # API Rounts
 
 #Admin
@@ -235,12 +239,21 @@ api.add_resource(GetApps_Endpoint, "/api/get_apps")
 # Function to stop the server gracefully
 stop_server_flag = threading.Event()
 def stop_server():
-    print("Stopping the API...")
+    print("Stopping the API....")
     stop_thread()
     stop_server_flag.set()
 
 # Run the API
-while not stop_server_flag.is_set():
+# try:
+#     if sys.platform.startswith('linux'):
+#         if __name__ == "__main__":
+#             app.run(host="0.0.0.0", port=302)
+#     else:
+#         if __name__ == "__main__":
+#             app.run(host="0.0.0.0", port=301)
+# except:
+#     stop_server()
+while True:
     try:
         if sys.platform.startswith('linux'):
             if __name__ == "__main__":
@@ -254,3 +267,5 @@ while not stop_server_flag.is_set():
         print("Keyboard interrupt! Stoping the Api...")
         stop_server()
         break
+    finally:
+        stop_server()

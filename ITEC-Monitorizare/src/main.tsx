@@ -11,7 +11,6 @@ import HomePage from './Pages/HomePage.tsx';
 import LoginPage from './Pages/LoginPage.tsx';
 import InfoPage from './Pages/InfoPage.tsx';
 import AddAppPage from './Pages/AddAppPage.tsx';
-import FeedbackPage from './Pages/FeedbackPage.tsx';
 import DeveloperDashboarPage from './Pages/DeveloperDashboarPage.tsx';
 
 
@@ -37,12 +36,6 @@ const router = createBrowserRouter([
       <RequireAuth fallbackPath={'/login'}>
         <AddAppPage />
       </RequireAuth>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: "/feedback",
-    element:
-        <FeedbackPage />,
     errorElement: <ErrorPage />
   },
   {
