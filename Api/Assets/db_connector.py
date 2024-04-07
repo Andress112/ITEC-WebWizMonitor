@@ -282,6 +282,9 @@ def checkAppEndPoints(AppId):
             with db.cursor() as dbcursor:
                 dbcursor.execute("SELECT url, id FROM endpoints WHERE app_id = ?;", (AppId,))
                 AppEndpoints = dbcursor.fetchall()
+
+                dbcursor.execute("SELECT id FROM bugs WHERE app_id = ?;", (AppId,))
+                AppHasABug = dbcursor.fetchall()
                 
                 endpointsStatus = []
                 appStatus = 0
@@ -313,7 +316,10 @@ def checkAppEndPoints(AppId):
                 if AppEndpoints:
                     # Determine app status
                     if all(element == 2 for element in endpointsStatus):
-                        appStatus = 2
+                        if not AppHasABug:
+                            appStatus = 2
+                        else:
+                            appStatus = 1
                     elif all(element == 0 for element in endpointsStatus):
                         appStatus = 0
                     else:

@@ -279,16 +279,6 @@ def stop_server():
     stop_thread()
     stop_server_flag.set()
 
-# Run the API
-# try:
-#     if sys.platform.startswith('linux'):
-#         if __name__ == "__main__":
-#             app.run(host="0.0.0.0", port=302)
-#     else:
-#         if __name__ == "__main__":
-#             app.run(host="0.0.0.0", port=301)
-# except:
-#     stop_server()
 while True:
     try:
         if sys.platform.startswith('linux'):
