@@ -13,8 +13,8 @@ try:
     db_pool = mariadb.ConnectionPool(
         pool_name="WebWizMonitor",
         pool_size=64,
-        host="amnezia.go.ro",
-        # host="127.0.0.1",
+        # host="amnezia.go.ro",
+        host="127.0.0.1",
         port=3309,
         user="WebWiz_admin",
         password="4sFRvTTwjW6EdUKqiyXc",
@@ -198,7 +198,6 @@ def AddNewAppEndpoint(appId, url, title):
             try:
                 if len(url) < 1:
                     return {"status": 109}
-                url = url.lower()
                 dbcursor.execute("SELECT Id FROM endpoints WHERE url = ? AND app_id = ?;", (url, appId))
                 appExists = dbcursor.fetchone()
                 if appExists == None:

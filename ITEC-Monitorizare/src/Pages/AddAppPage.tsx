@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Formik } from "formik";
 import axios, { AxiosError } from "axios";
+import Cookies from "js-cookie";
 import Swal from 'sweetalert2'
 import useHandleRequestError from "../Components/useHandleRequestError";
 import { useNavigate } from "react-router-dom";
@@ -13,9 +14,37 @@ function AddAppPage() {
     const [Endpoints, setEndpoints] = useState<string[]>([""]);
     const [EndpointsNames, setEndpointsNames] = useState<string[]>([""]);
     const [EndpointDeleteButtonVisible, setEndpointDeleteButtonVisible] = useState(false);
+    const [AppName, setAppName] = useState("");
+
+    // Auth Data
+    const [userId, setUserId] = useState<number | null>(null);
+    const [authInitialized, setAuthInitialized] = useState<boolean>(false);
+    const [tryCount, setTryCount] = useState(0);
 
     const handleRequestError = useHandleRequestError();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (tryCount >= 10 || authInitialized) {
+            return;
+        }
+        const authStateCookie = Cookies.get("_auth_state");
+
+        if (authStateCookie) {
+            try {
+                const authState = JSON.parse(decodeURIComponent(authStateCookie));
+                setUserId(authState.Id);
+
+                setAuthInitialized(true);
+                setTimeout(() => {}, 1000);
+            } catch (error) {
+                console.error("Error parsing cookie content:", error);
+                setTimeout(() => setTryCount(prevCount => prevCount + 1), 1000);
+            }
+        } else {
+            setTimeout(() => setTryCount(prevCount => prevCount + 1), 1000);
+        }
+    }, [tryCount, authInitialized]);
 
     const handleEndpointChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const updatedEndpoints = [...Endpoints];
@@ -46,8 +75,8 @@ function AddAppPage() {
         setEndpointsNames(newEndpointNameFields)
     };
 
-    const handleAppUpload = async (values: { username: string }) => {
-        if (values.username.trim().length < 1) {
+    const handleAppUpload = async () => {
+        if (AppName.trim().length < 1) {
             Swal.fire({
                 title: "You need to provide an app name",
                 icon: 'info',
@@ -60,8 +89,8 @@ function AddAppPage() {
                 const response = await axios.post(
                     "http://127.0.0.1:301/api/add_app",
                     {
-                        userId: 1,
-                        appName: values.username.trim(),
+                        userId: userId,
+                        appName: AppName.trim(),
                         endpoints: Endpoints,
                         endpointNames: EndpointsNames,
                     },
@@ -74,16 +103,14 @@ function AddAppPage() {
                 );
 
                 if (response.data.status === 200) {
-                    if (response.data.data !== "") {
-                        Swal.fire({
-                            title: "Success",
-                            text: response.data.data,
-                            icon: 'success',
-                            confirmButtonText: 'Ok',
-                            timer: 10000,
-                            timerProgressBar: true,
-                        });
-                    }
+                    Swal.fire({
+                        title: "Success",
+                        text: response.data.data,
+                        icon: 'success',
+                        confirmButtonText: 'Ok',
+                        timer: 10000,
+                        timerProgressBar: true,
+                    });
                     navigate("/")
                 } else {
                     handleRequestError(response.data.status)
@@ -111,15 +138,15 @@ function AddAppPage() {
                 </div>
                 <div className="AddAppPage-bottom">
                     <Formik
-                        initialValues={{ username: ""}}
+                        initialValues={{}}
                         onSubmit={handleAppUpload}>
-                        {({ handleChange, handleSubmit, values }) => (
+                        {({ handleSubmit }) => (
                             <form onSubmit={handleSubmit} className="AddAppPage-container">
                                 <div className="AddAppPage-container-top">
                                     <img src="/backrounds/image-placeholder.png"/>
                                     <div className="AddAppPage-container-name">
-                                        <label>App name</label>
-                                        <input type="text" id="username" name="username" placeholder="App's Name" onChange={handleChange} value={values.username}></input>
+                                        <label htmlFor="appName">App name</label>
+                                        <input type="text" id="appName" name="appName" placeholder="App's Name" onChange={(event) => {setAppName(event.target.value)}} value={AppName}></input>
                                     </div>
                                 </div>
                                 <div className="AddAppPage-endpoints-title">

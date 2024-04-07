@@ -85,6 +85,11 @@ function Navbar() {
                             </Link>
                         </li>
                         <li>
+                            <Link to="/dashboard" className="Navbar-link">
+                                Dashboard
+                            </Link>
+                        </li>
+                        <li>
                             <Link to="/feedback" className="Navbar-link">
                                 Feedback
                             </Link>
