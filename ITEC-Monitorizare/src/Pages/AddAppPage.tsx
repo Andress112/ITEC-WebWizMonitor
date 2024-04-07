@@ -15,6 +15,8 @@ function AddAppPage() {
     const [EndpointsNames, setEndpointsNames] = useState<string[]>([""]);
     const [EndpointDeleteButtonVisible, setEndpointDeleteButtonVisible] = useState(false);
     const [AppName, setAppName] = useState("");
+    const [AppImage, setAppImage] = useState("");
+    const [AppImageLink, setAppImageLink] = useState("");
 
     // Auth Data
     const [userId, setUserId] = useState<number | null>(null);
@@ -91,6 +93,7 @@ function AddAppPage() {
                     {
                         userId: userId,
                         appName: AppName.trim(),
+                        appImage: AppImage.trim(),
                         endpoints: Endpoints,
                         endpointNames: EndpointsNames,
                     },
@@ -143,10 +146,12 @@ function AddAppPage() {
                         {({ handleSubmit }) => (
                             <form onSubmit={handleSubmit} className="AddAppPage-container">
                                 <div className="AddAppPage-container-top">
-                                    <img src="/backrounds/image-placeholder.png"/>
+                                    <img src={AppImage === "" ? "/backrounds/image-placeholder.png" : AppImage}/>
                                     <div className="AddAppPage-container-name">
                                         <label htmlFor="appName">App name</label>
                                         <input type="text" id="appName" name="appName" placeholder="App's Name" onChange={(event) => {setAppName(event.target.value)}} value={AppName}></input>
+                                        <label htmlFor="appImage">App image</label>
+                                        <input type="text" id="appImage" name="appImage" placeholder="App's image URL" onChange={(event) => {setAppImage(event.target.value)}} value={AppImage}></input>
                                     </div>
                                 </div>
                                 <div className="AddAppPage-endpoints-title">

@@ -137,7 +137,7 @@ def LoginUser(Username, Password, Email):
     if (tryes == 10):
         return {"status": 0}
 
-def AddNewApp(userId, appName):
+def AddNewApp(userId, appName, appImage):
     global maxTryes
     tryes = 0
     while tryes < maxTryes:
@@ -153,7 +153,7 @@ def AddNewApp(userId, appName):
                 dbcursor.execute("SELECT Id FROM apps WHERE name = ?;", (appName,))
                 appExists = dbcursor.fetchone()
                 if appExists == None:
-                    dbcursor.execute("INSERT INTO apps (name, status, uptime, user_id) VALUES (?, ?, ?, ?)", (appName, 1, 100.0, userId))
+                    dbcursor.execute("INSERT INTO apps (name, app_picture, status, uptime, user_id) VALUES (?, ?, ?, ?, ?)", (appName, appImage, 2, 100.0, userId))
                     db.commit()
                     NewAppId = dbcursor.lastrowid
                     return {"status": 200, "appId": NewAppId}
@@ -211,6 +211,72 @@ def AddNewAppEndpoint(appId, url, title):
                     return {"status": 200}
                 else:
                     return {"status": 108}
+            except Exception as e:
+                print(e)
+                tryes += 1
+        except mariadb.Error as e:
+            tryes += 1
+            print(f"Database error: {e}")
+        finally:
+            if dbcursor:
+                dbcursor.close()
+            if db:
+                db.close()
+    if (tryes == 10):
+        return {"status": 0}
+
+def getDevApps(userId):
+    global maxTryes
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            db = get_db_connection()
+            dbcursor = db.cursor()
+            try:
+                dbcursor.execute("SELECT * FROM apps WHERE user_id = ?;", (userId,))
+                appExists = dbcursor.fetchall()
+                if not appExists:
+                    return {"status": 110}
+                return {"status": 200, "apps": appExists}
+            except Exception as e:
+                print(e)
+                tryes += 1
+        except mariadb.Error as e:
+            tryes += 1
+            print(f"Database error: {e}")
+        finally:
+            if dbcursor:
+                dbcursor.close()
+            if db:
+                db.close()
+    if (tryes == 10):
+        return {"status": 0}
+
+def checkAppEndPoints(AppId):
+    global maxTryes
+    tryes = 0
+    while tryes < maxTryes:
+        try:
+            db = get_db_connection()
+            dbcursor = db.cursor()
+            try:
+                dbcursor.execute("SELECT url, id FROM endpoints WHERE app_id = ?;", (AppId,))
+                AppEndpoints = dbcursor.fetchall()
+                for endpoint in AppEndpoints:
+                    ErroredRequests = 0
+                    for i in range(0, 10):
+                        try:
+                            status = IsEndpointOk(endpoint)
+                            if not status:
+                                ErroredRequests += 1
+                        except requests.ConnectionError:
+                            ErroredRequests += 1
+                    if ErroredRequests == 10: 
+                        endpointStatus = 0
+                    elif ErroredRequests > 0:
+                        endpointStatus = 1
+                    if endpointStatus != 0:
+                        dbcursor.execute("SELECT url, id FROM endpoints WHERE app_id = ?;", (AppId,))
             except Exception as e:
                 print(e)
                 tryes += 1

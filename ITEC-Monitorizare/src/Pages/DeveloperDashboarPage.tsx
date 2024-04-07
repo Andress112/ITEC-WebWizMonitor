@@ -1,7 +1,102 @@
-import "./css/DeveloperDashboarPage.css";
+import { useState, useEffect, useRef } from "react";
+import Cookies from "js-cookie";
+import axios, { AxiosError } from "axios";
+import Swal from 'sweetalert2'
+import useHandleRequestError from "../Components/useHandleRequestError";
 import MainLayout from "../Layout/MainLayout";
+import "./css/DeveloperDashboarPage.css";
+
+interface AppData {
+    [key: string]: string | number | Record<string, string | number>;
+    app_logo: string
+    name: string;
+    status: number;
+    uptime: number;
+}
 
 function DeveloperDashboarPage() {
+    const handleRequestError = useHandleRequestError();
+
+    // Auth Data
+    const [userId, setUserId] = useState<number | null>(null);
+    const [authInitialized, setAuthInitialized] = useState<boolean>(false);
+    const [jsonData, setJsonData] = useState<Record<string, AppData>>({});
+    const [tryCount, setTryCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const isInitialMount = useRef(true);
+
+    useEffect(() => {
+        if (tryCount >= 10 || authInitialized) {
+            return;
+        }
+        const authStateCookie = Cookies.get("_auth_state");
+
+        if (authStateCookie) {
+            try {
+                const authState = JSON.parse(decodeURIComponent(authStateCookie));
+                setUserId(authState.Id);
+
+                setAuthInitialized(true);
+                setTimeout(() => {}, 1000);
+            } catch (error) {
+                console.error("Error parsing cookie content:", error);
+                setTimeout(() => setTryCount(prevCount => prevCount + 1), 1000);
+            }
+        } else {
+            setTimeout(() => setTryCount(prevCount => prevCount + 1), 1000);
+        }
+    }, [tryCount, authInitialized]);
+
+    useEffect(() => {
+        const getDeveloperApps = async () => {
+            try {
+                const response = await axios.post(
+                    "http://127.0.0.1:301/api/get_dev_apps",
+                    {
+                        userId: userId,
+                    },
+                    {
+                        headers: {
+                            "Access-Control-Allow-Origin": "*",
+                            "Content-Type": "application/json"
+                        },
+                    }
+                );
+    
+                if (response.data.status === 200) {
+                    console.log(response.data.status)
+                    setJsonData(response.data.data);
+                } else {
+                    handleRequestError(response.data.status)
+                }
+            } catch (error) {
+                if (error instanceof AxiosError) {
+                    console.error(error)
+                    Swal.fire({
+                        title: "An error occurred check the console for more information",
+                        icon: 'error',
+                        confirmButtonText: 'Ok',
+                        timer: 10000,
+                        timerProgressBar: true,
+                    });
+                }
+            }
+        };
+
+        if (isInitialMount.current && authInitialized) {
+            isInitialMount.current = false; // Set the ref to false after the first render
+            getDeveloperApps(); // Call getUserdata when authInitialized becomes true
+            setLoading(false);
+        }
+
+        const interval = setInterval(() => {
+            getDeveloperApps()
+        }, 3000);
+    
+        return () => clearInterval(interval);
+
+    });
+
     return (
         <MainLayout>
             <div className="DeveloperDashboarPage">
@@ -11,15 +106,15 @@ function DeveloperDashboarPage() {
                 <div className="DeveloperDashboarPage-bottom">
                     <div className="DeveloperDashboarPage-container">
                         <div className="DeveloperDashboarPage-apps">
-                            {Array.from({ length: 8 }, (_, index) => (
-                                <div className="DeveloperDashboarPage-container-apps" key={index}>
-                                    <img src="/backrounds/image-placeholder.png" alt="App Placeholder Image" />
+                            {Object.keys(jsonData).map((key) => (
+                                <div className="DeveloperDashboarPage-container-apps" key={key}>
+                                    <img src={jsonData[key]?.app_logo === "" ? "/backrounds/image-placeholder.png" : jsonData[key]?.app_logo.toString()} alt="App Placeholder Image" />
                                     <div className="DeveloperDashboarPage-container-apps-right">
                                         <div className="DeveloperDashboarPage-container-apps-right-top">
-                                            <span className="DeveloperDashboarPage-app-names">My App</span>
-                                            <div className="DeveloperDashboarPage-container-apps-status">
+                                            <span className="DeveloperDashboarPage-app-names">{jsonData[key]?.name}</span>
+                                            <div className="DeveloperDashboarPage-container-apps-status" style={{color: jsonData[key]?.status == 0 ? "#c90011" : jsonData[key]?.status == 1 ? "#bfa600" : "#08c239"}}>
                                                 <span>&#x2022;</span>
-                                                <span>Unstable</span>
+                                                <span>{jsonData[key]?.status == 0 ? "Down" : jsonData[key]?.status == 1 ? "Unstable" : "Stable"}</span>
                                             </div>
                                         </div>
                                     </div>

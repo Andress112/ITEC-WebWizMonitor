@@ -57,7 +57,9 @@
 }
 .DeveloperDashboarPage-container-apps img {
     height: 120px;
+    width: 160px;
     border-radius: 12px;
+    object-fit: scale-down;
 }
 .DeveloperDashboarPage-container-apps-right {
     width: 100%;

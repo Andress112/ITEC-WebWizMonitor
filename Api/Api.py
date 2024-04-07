@@ -5,7 +5,7 @@ from flask_cors import CORS
 import sys, json
 
 #Import Custom Packages
-from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint
+from Assets.db_connector import GetToken, LoginUser, AddUser, AddNewApp, AddNewAppEndpoint, getDevApps
 from Assets.functions import generate_random_string
 
 
@@ -51,6 +51,7 @@ UserSignUp_args.add_argument("email", type=str)
 AddApp_args = reqparse.RequestParser()
 AddApp_args.add_argument("userId", type=int, required=True) 
 AddApp_args.add_argument("appName", type=str, required=True)
+AddApp_args.add_argument("appImage", type=str, required=True)
 AddApp_args.add_argument("endpoints", type=list, required=True)
 AddApp_args.add_argument("endpointNames", type=list, required=True)
 
@@ -125,18 +126,16 @@ class AddApp_Endpoint(Resource):
         payload = request.get_json()
         userId = int(payload["userId"])
         appName = payload["appName"]
+        appImage = payload["appImage"]
         endpoints = payload["endpoints"]
         endpointsNames = payload["endpointNames"]
         
         endpointsWithDuplicateUrls = False
         try:
-            addAppResponse = AddNewApp(userId, appName)
+            addAppResponse = AddNewApp(userId, appName, appImage)
             if addAppResponse["status"] == 106:
                 return jsonify({"status" : 106, "data" : "An app with this name already exists!"})
             elif addAppResponse["status"] == 200:
-                print(type(endpoints))
-                print(endpoints)
-                print(endpointsNames)
                 for index, endpoint in enumerate(endpoints):
                     newEndpointResponse = AddNewAppEndpoint(addAppResponse["appId"], endpoint, endpointsNames[index])
                     if newEndpointResponse["status"] == 108:
@@ -150,6 +149,34 @@ class AddApp_Endpoint(Resource):
             error = {"status" : 552, "data" : "An error occurred while add a new app!"}
             print(error, err)
             return jsonify(error)
+
+class GetDevApps_Endpoint(Resource):
+    def post(self):
+        payload = request.get_json()
+        userId = int(payload["userId"])
+        try:
+            Apps = getDevApps(userId)
+            print(Apps)
+            if Apps["status"] == 110:
+                return jsonify({"status" : 200, "data" : ""})
+            elif Apps["status"] == 200:
+                formatted_apps = []
+                for app in Apps["apps"]:
+                    formatted_app = {
+                        "name": app[1],
+                        "app_logo": app[2],
+                        "status": app[3],
+                        "uptime": app[4]
+                    }
+                    formatted_apps.append(formatted_app)
+                return jsonify({"status" : 200, "data" : formatted_apps})
+            else:
+                return jsonify({"status" : 503, "data" : "An error occurred while retriving the apps!"})
+        except Exception as err:
+            error = {"status" : 553, "data" : "An error occurred while retriving the apps!"}
+            print(error, err)
+            return jsonify(error)
+
 
 # API Rounts
 
@@ -166,6 +193,8 @@ api.add_resource(UserSignUp_Endpoint, "/api/signup")
 api.add_resource(UserLogIn_Endpoint, "/api/login")
 
 api.add_resource(AddApp_Endpoint, "/api/add_app")
+
+api.add_resource(GetDevApps_Endpoint, "/api/get_dev_apps")
 
 
 # Run the API
